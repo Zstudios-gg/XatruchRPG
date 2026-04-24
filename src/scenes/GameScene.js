@@ -1,4 +1,5 @@
 import * as Phaser from 'phaser'
+import { PlayerData } from './PlayerData.js'
 
 export class GameScene extends Phaser.Scene {
   constructor() {
@@ -10,7 +11,20 @@ export class GameScene extends Phaser.Scene {
     this._bobTime = 0
   }
 
-  create() {
+  async create()  {
+
+     const user = this.registry.get('user')
+
+      if (user) {
+    this.playerData = new PlayerData(user.uid)
+    await this.playerData.load()
+    this.playerData.startAutoSave(this, 30000) // guarda cada 30 segundos
+  } else {
+    // Sin cuenta — datos locales temporales
+    this.playerData = new PlayerData('guest')
+    this.playerData.data = { ...this.playerData.data }
+  }
+
     const { width, height } = this.scale
 
     // Fondo
@@ -41,8 +55,22 @@ export class GameScene extends Phaser.Scene {
 
     this.connectJoystick()
 
-    this.scene.launch('HUDScene')
-this.hud = this.scene.get('HUDScene')
+   this.scene.launch('HUDScene')
+  this.hud = this.scene.get('HUDScene')
+
+  this.time.delayedCall(100, () => {
+    if (this.hud && this.playerData) {
+      this.hud.setHP(this.playerData.get('hp'))
+      this.hud.setHPMax(this.playerData.get('hpMax'))
+      this.hud.setGold(this.playerData.get('gold'))
+      this.hud.setStats({
+        level: this.playerData.get('level'),
+        xp:    this.playerData.get('xp'),
+        xpMax: this.playerData.get('xpMax'),
+        gems:  this.playerData.get('gems')
+      })
+    }
+  })
   }
 
   connectJoystick() {
