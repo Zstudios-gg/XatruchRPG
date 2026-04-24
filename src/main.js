@@ -1,13 +1,14 @@
 import * as Phaser from 'phaser'
+import { SplashScene } from './scenes/SplashScene.js'
 import { GameScene } from './scenes/GameScene.js'
 
 const config = {
   type: Phaser.AUTO,
   width: window.innerWidth,
   height: window.innerHeight * 0.80,
-  backgroundColor: '#1a2a4a',
+  backgroundColor: '#000000',
   parent: 'game-container',
-  scene: [GameScene],
+  scene: [SplashScene, GameScene],
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH
