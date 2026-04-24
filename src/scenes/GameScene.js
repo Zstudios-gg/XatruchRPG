@@ -47,45 +47,47 @@ export class GameScene extends Phaser.Scene {
     const map = this.make.tilemap({ key: 'siguatepeque' })
     const tileset = map.addTilesetImage('sprout', 'tiles-grass')
 
-    // Capas del mapa
     this._layerSuelo    = map.createLayer('suelo', tileset, 0, 0)
     this._layerObjetos  = map.createLayer('objetos', tileset, 0, 0)
     this._layerColision = map.createLayer('colisiones', tileset, 0, 0)
 
-    // Colisiones en la capa de colisiones
     if (this._layerColision) {
       this._layerColision.setCollisionByExclusion([-1])
-      this._layerColision.setAlpha(0) // invisible — solo para colisionar
+      this._layerColision.setAlpha(0)
     }
 
-    // ── PERSONAJE ────────────────────────────────────────────────────────────
+    // ── POSICIÓN INICIAL ─────────────────────────────────────────────────────
     const startX = this.playerData.get('posX') || map.widthInPixels / 2
     const startY = this.playerData.get('posY') || map.heightInPixels / 2
 
-    // Sombra
+    // ── TEXTURA DEL PERSONAJE ────────────────────────────────────────────────
+    const g = this.make.graphics({ x: 0, y: 0, add: false })
+    g.fillStyle(0xc9a84c, 1)
+    g.fillRect(0, 0, 24, 32)
+    g.generateTexture('player-texture', 24, 32)
+    g.destroy()
+
+    // ── SOMBRA ───────────────────────────────────────────────────────────────
     this.shadow = this.add.ellipse(startX, startY + 16, 20, 8, 0x000000, 0.3)
+    this.shadow.setDepth(9)
 
-    // Personaje como objeto físico
-  this.player = this.physics.add.image(startX, startY, '__DEFAULT')
-  this.player.setDisplaySize(24, 32)
-  this.player.setTint(0xc9a84c)
-  this.player.setDepth(10)
-  this.player.body.setCollideWorldBounds(true)
-  this.shadow.setDepth(9)
+    // ── PERSONAJE ────────────────────────────────────────────────────────────
+    this.player = this.physics.add.image(startX, startY, 'player-texture')
+    this.player.setDepth(10)
+    this.player.body.setCollideWorldBounds(true)
 
-    // Colisión entre jugador y capa de colisiones
+    // ── COLISIONES ───────────────────────────────────────────────────────────
     if (this._layerColision) {
       this.physics.add.collider(this.player, this._layerColision)
     }
 
-    // Límites del mundo = tamaño del mapa
+    // ── LÍMITES DEL MUNDO ────────────────────────────────────────────────────
     this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
-    this.player.setCollideWorldBounds(true)
 
     // ── CÁMARA ───────────────────────────────────────────────────────────────
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
-this.cameras.main.startFollow(this.player, true, 0.1, 0.1)
-this.cameras.main.setZoom(2)
+    this.cameras.main.startFollow(this.player, true, 0.1, 0.1)
+    this.cameras.main.setZoom(2)
 
     // ── JOYSTICK ─────────────────────────────────────────────────────────────
     this.connectJoystick()
@@ -144,8 +146,8 @@ this.cameras.main.setZoom(2)
     const { dx, dy } = this.joyData
     const isMoving = dx !== 0 || dy !== 0
 
-    // Movimiento con física
-   this.player.setVelocity(dx * this.speed, dy * this.speed)
+    // Movimiento
+    this.player.setVelocity(dx * this.speed, dy * this.speed)
 
     // Bob al moverse
     if (isMoving) {
