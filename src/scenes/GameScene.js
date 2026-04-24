@@ -66,11 +66,12 @@ export class GameScene extends Phaser.Scene {
     this.shadow = this.add.ellipse(startX, startY + 16, 20, 8, 0x000000, 0.3)
 
     // Personaje como objeto físico
-   this.player = this.add.rectangle(startX, startY, 24, 32, 0xc9a84c)
-this.physics.add.existing(this.player)
-this.player.body.setCollideWorldBounds(true)
-    this.player.setDepth(10)
-    this.shadow.setDepth(9)
+  this.player = this.physics.add.image(startX, startY, '__DEFAULT')
+  this.player.setDisplaySize(24, 32)
+  this.player.setTint(0xc9a84c)
+  this.player.setDepth(10)
+  this.player.body.setCollideWorldBounds(true)
+  this.shadow.setDepth(9)
 
     // Colisión entre jugador y capa de colisiones
     if (this._layerColision) {
@@ -83,8 +84,8 @@ this.player.body.setCollideWorldBounds(true)
 
     // ── CÁMARA ───────────────────────────────────────────────────────────────
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
-    this.cameras.main.startFollow(this.player, true, 0.1, 0.1)
-    this.cameras.main.setZoom(2) // zoom para tiles de 16px
+this.cameras.main.startFollow(this.player, true, 0.1, 0.1)
+this.cameras.main.setZoom(2)
 
     // ── JOYSTICK ─────────────────────────────────────────────────────────────
     this.connectJoystick()
@@ -144,7 +145,7 @@ this.player.body.setCollideWorldBounds(true)
     const isMoving = dx !== 0 || dy !== 0
 
     // Movimiento con física
-   this.player.body.setVelocity(dx * this.speed, dy * this.speed)
+   this.player.setVelocity(dx * this.speed, dy * this.speed)
 
     // Bob al moverse
     if (isMoving) {
