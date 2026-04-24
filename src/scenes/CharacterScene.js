@@ -1,5 +1,6 @@
 import * as Phaser from 'phaser'
-
+import { auth } from '../firebase.js'
+import { onAuthStateChanged } from 'firebase/auth'
 /**
  * CharacterScene — pantalla de creación de personaje
  * Solo aparece la primera vez que el jugador entra.
@@ -16,7 +17,23 @@ export class CharacterScene extends Phaser.Scene {
   }
 
   create() {
+
     const { width, height } = this.scale
+
+     // Si ya tiene sesión activa, saltar directo al juego
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        this.registry.set('user', user)
+        this.scene.start('SplashScene')
+        return
+      }
+    })
+
+     // Si ya creó personaje antes (viene de AuthScene de vuelta), saltar
+    if (this.registry.get('character')) {
+      this.scene.start('AuthScene')
+      return
+    }
 
     // ── FONDO ──────────────────────────────────────────────────────────────
     const bg = this.add.graphics()
