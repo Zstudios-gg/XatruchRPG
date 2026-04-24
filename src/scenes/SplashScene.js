@@ -63,7 +63,7 @@ export class SplashScene extends Phaser.Scene {
 
     // ── LOGO XATRUCH RPG ────────────────────────────────────────────────────
     const xLogo = this.add.image(width / 2, height * 0.46, 'logo-xatruch')
-    xLogo.setDisplaySize(Math.min(width * 0.82, 320), Math.min(width * 0.82, 320))
+   xLogo.setDisplaySize(Math.min(width * 0.55, 220), Math.min(width * 0.55, 220))
     xLogo.setAlpha(0)
 
     // ── BOTÓN JUGAR ─────────────────────────────────────────────────────────
