@@ -10,7 +10,10 @@ export class CharacterScene extends Phaser.Scene {
     this._skinIndex = 0
     this._hairIndex = 0
   }
-
+preload() {
+  this.load.image('logo-xatruch', '/XatruchRPG/assets/logo-xatruch.png')
+  this.load.image('bg-splash', '/XatruchRPG/assets/bg-splash.jpg')
+}
   create() {
     const { width, height } = this.scale
 
