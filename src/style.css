@@ -295,22 +295,3 @@ code {
   }
 }
 
-#joy-base {
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  background: rgba(42, 42, 74, 0.9);
-  border: 2px solid #444466;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-#joy-thumb {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: #c9a84c;
-  position: absolute;
-  touch-action: none;
-}
