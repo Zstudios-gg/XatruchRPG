@@ -22,7 +22,7 @@ export class GameScene extends Phaser.Scene {
 
     // Zona del joystick — abajo a la izquierda
     const jx = 80
-    const jy = height - 70
+    const jy = height - 40
 
     // Base del joystick
     this.add.circle(jx, jy, 45, 0x2a2a4a, 0.9)
