@@ -1,15 +1,10 @@
 import * as Phaser from 'phaser'
 import { auth } from '../firebase.js'
 import { onAuthStateChanged } from 'firebase/auth'
-/**
- * CharacterScene — pantalla de creación de personaje
- * Solo aparece la primera vez que el jugador entra.
- * Guarda la selección en el registry y pasa a AuthScene.
- */
+
 export class CharacterScene extends Phaser.Scene {
   constructor() {
     super({ key: 'CharacterScene' })
-
     this._gender    = 'male'
     this._name      = ''
     this._skinIndex = 0
@@ -17,33 +12,37 @@ export class CharacterScene extends Phaser.Scene {
   }
 
   create() {
-
     const { width, height } = this.scale
 
-     // Si ya tiene sesión activa, saltar directo al juego
+    // Fondo mientras verifica sesión
+    this.add.rectangle(width / 2, height / 2, width, height, 0x050d05)
+    this.add.text(width / 2, height / 2, 'Cargando...', {
+      fontSize: '13px',
+      color: '#c9a84c'
+    }).setOrigin(0.5)
+
+    // Verificar sesión primero — solo después mostrar UI
     onAuthStateChanged(auth, (user) => {
       if (user) {
         this.registry.set('user', user)
         this.scene.start('SplashScene')
-        return
+      } else if (this.registry.get('character')) {
+        this.scene.start('AuthScene')
+      } else {
+        this._buildCharacterUI(width, height)
       }
     })
+  }
 
-     // Si ya creó personaje antes (viene de AuthScene de vuelta), saltar
-    if (this.registry.get('character')) {
-      this.scene.start('AuthScene')
-      return
-    }
+  _buildCharacterUI(width, height) {
+    this.children.removeAll(true)
 
-    // ── FONDO ──────────────────────────────────────────────────────────────
     const bg = this.add.graphics()
     bg.fillGradientStyle(0x050d05, 0x050d05, 0x0a1a0e, 0x030a06, 1)
     bg.fillRect(0, 0, width, height)
 
-    // Partículas
     this._buildParticles(width, height)
 
-    // ── TÍTULO ──────────────────────────────────────────────────────────────
     this.add.text(width / 2, height * 0.06, 'CREA TU PERSONAJE', {
       fontSize: '14px',
       color: '#c9a84c',
@@ -53,79 +52,63 @@ export class CharacterScene extends Phaser.Scene {
       strokeThickness: 3
     }).setOrigin(0.5)
 
-    // Línea decorativa
     const line = this.add.graphics()
     line.lineStyle(1, 0xc9a84c, 0.4)
     line.lineBetween(width * 0.15, height * 0.1, width * 0.85, height * 0.1)
 
-    // ── PREVIEW DEL PERSONAJE ───────────────────────────────────────────────
+    this._skinColors = [0xfdbcb4, 0xd4956a, 0x8d5524, 0x4a2912]
+    this._hairColors = [0x1a0a00, 0x8B4513, 0xDAA520, 0xff6b6b, 0x4444ff, 0xffffff]
     this._previewContainer = this.add.container(width / 2, height * 0.26)
     this._buildPreview()
 
-    // ── SECCIÓN GÉNERO ──────────────────────────────────────────────────────
     this.add.text(width / 2, height * 0.42, 'GÉNERO', {
       fontSize: '10px', color: '#888866', letterSpacing: 3
     }).setOrigin(0.5)
 
-    // Botón Masculino
     this._btnMale = this._makeOptionBtn(width * 0.3, height * 0.48, '♂  Masculino', true)
     this._btnMale.on('pointerdown', () => this._selectGender('male'))
 
-    // Botón Femenino
     this._btnFemale = this._makeOptionBtn(width * 0.7, height * 0.48, '♀  Femenino', false)
     this._btnFemale.on('pointerdown', () => this._selectGender('female'))
 
-    // ── SECCIÓN NOMBRE ──────────────────────────────────────────────────────
     this.add.text(width / 2, height * 0.555, 'NOMBRE', {
       fontSize: '10px', color: '#888866', letterSpacing: 3
     }).setOrigin(0.5)
 
-    // Fondo del input
     const inputBg = this.add.graphics()
     inputBg.fillStyle(0x111122, 1)
     inputBg.fillRoundedRect(width * 0.15, height * 0.585, width * 0.7, 36, 8)
     inputBg.lineStyle(1, 0xc9a84c, 0.4)
     inputBg.strokeRoundedRect(width * 0.15, height * 0.585, width * 0.7, 36, 8)
 
-    // Texto del nombre
     this._nameText = this.add.text(width / 2, height * 0.585 + 18, 'Toca para escribir...', {
       fontSize: '13px',
       color: '#666655',
       fontStyle: 'italic'
     }).setOrigin(0.5)
 
-    // Input HTML real (invisible, solo para capturar texto)
     this._setupNameInput(width, height)
 
-    // Hit area para abrir teclado
     const inputHit = this.add.rectangle(width / 2, height * 0.585 + 18, width * 0.7, 36, 0x000000, 0)
     inputHit.setInteractive()
-    inputHit.on('pointerdown', () => {
-      document.getElementById('name-input-rpg').focus()
-    })
+    inputHit.on('pointerdown', () => document.getElementById('name-input-rpg')?.focus())
 
-    // ── SECCIÓN SKIN ────────────────────────────────────────────────────────
     this.add.text(width * 0.28, height * 0.665, 'PIEL', {
       fontSize: '10px', color: '#888866', letterSpacing: 3
     }).setOrigin(0.5)
 
-    this._skinColors = [0xfdbcb4, 0xd4956a, 0x8d5524, 0x4a2912]
-    this._skinDots   = []
+    this._skinDots = []
     this._skinColors.forEach((color, i) => {
-      const dot = this._makeColorDot(
-        width * 0.12 + i * 28, height * 0.695, color, i === 0
-      )
+      const dot = this._makeColorDot(width * 0.12 + i * 28, height * 0.695, color, i === 0)
       dot.on('pointerdown', () => this._selectSkin(i))
       this._skinDots.push(dot)
     })
 
-    // ── SECCIÓN CABELLO ─────────────────────────────────────────────────────
     this.add.text(width * 0.72, height * 0.665, 'CABELLO', {
       fontSize: '10px', color: '#888866', letterSpacing: 3
     }).setOrigin(0.5)
 
-    this._hairColors = [0x1a0a00, 0x8B4513, 0xDAA520, 0xff6b6b, 0x4444ff, 0xffffff]
-    this._hairDots   = []
+    this._hairDots = []
     this._hairColors.forEach((color, i) => {
       const x = width * 0.52 + (i % 3) * 28
       const y = height * 0.685 + Math.floor(i / 3) * 28
@@ -134,7 +117,6 @@ export class CharacterScene extends Phaser.Scene {
       this._hairDots.push(dot)
     })
 
-    // ── BOTÓN CONTINUAR ─────────────────────────────────────────────────────
     const btnY = height * 0.88
     const btnGfx = this.add.graphics()
     this._drawBtn(btnGfx, width / 2, btnY, 220, 48)
@@ -150,7 +132,6 @@ export class CharacterScene extends Phaser.Scene {
     hitBtn.setInteractive()
     hitBtn.on('pointerdown', () => this._continue())
 
-    // Pulso
     this.tweens.add({
       targets: btnGfx,
       scaleX: 1.03, scaleY: 1.03,
@@ -158,52 +139,32 @@ export class CharacterScene extends Phaser.Scene {
       ease: 'Sine.easeInOut'
     })
 
-    // Fade in
     this.cameras.main.fadeIn(400, 0, 0, 0)
   }
 
-  // ── PREVIEW ───────────────────────────────────────────────────────────────
-
   _buildPreview() {
     this._previewContainer.removeAll(true)
-
     const skin = this._skinColors[this._skinIndex]
     const hair = this._hairColors[this._hairIndex]
 
-    // Sombra
-    this._previewContainer.add(
-      this.add.ellipse(0, 38, 30, 10, 0x000000, 0.3)
-    )
+    this._previewContainer.add(this.add.ellipse(0, 38, 30, 10, 0x000000, 0.3))
+    this._previewContainer.add(this.add.rectangle(0, 16, 28, 36, skin))
+    this._previewContainer.add(this.add.rectangle(0, -14, 26, 24, skin))
 
-    // Cuerpo
-    this._previewContainer.add(
-      this.add.rectangle(0, 16, 28, 36, skin)
-    )
-
-    // Cabeza
-    this._previewContainer.add(
-      this.add.rectangle(0, -14, 26, 24, skin)
-    )
-
-    // Cabello
     const hairShape = this._gender === 'male'
       ? this.add.rectangle(0, -24, 26, 8, hair)
       : this.add.ellipse(0, -24, 30, 14, hair)
     this._previewContainer.add(hairShape)
 
-    // Ojos
     this._previewContainer.add(this.add.rectangle(-6, -14, 4, 4, 0x222222))
     this._previewContainer.add(this.add.rectangle(6, -14, 4, 4, 0x222222))
 
-    // Detalle género (falda para femenino)
     if (this._gender === 'female') {
       this._previewContainer.add(
         this.add.triangle(0, 30, -18, 0, 18, 0, 0, 22, 0x9966cc, 0.8)
       )
     }
   }
-
-  // ── SELECCIÓN ─────────────────────────────────────────────────────────────
 
   _selectGender(gender) {
     this._gender = gender
@@ -225,28 +186,19 @@ export class CharacterScene extends Phaser.Scene {
     this._buildPreview()
   }
 
-  // ── INPUT DE NOMBRE ────────────────────────────────────────────────────────
-
   _setupNameInput(width, height) {
     let input = document.getElementById('name-input-rpg')
     if (!input) {
       input = document.createElement('input')
-      input.id          = 'name-input-rpg'
-      input.type        = 'text'
-      input.maxLength   = 16
-      input.placeholder = 'Tu nombre...'
+      input.id        = 'name-input-rpg'
+      input.type      = 'text'
+      input.maxLength = 16
       input.style.cssText = `
-        position: absolute;
-        opacity: 0;
-        pointer-events: none;
-        width: 1px;
-        height: 1px;
-        top: 50%;
-        left: 50%;
+        position: absolute; opacity: 0; pointer-events: none;
+        width: 1px; height: 1px; top: 50%; left: 50%;
       `
       document.body.appendChild(input)
     }
-
     input.addEventListener('input', () => {
       this._name = input.value.trim()
       if (this._name.length > 0) {
@@ -261,11 +213,8 @@ export class CharacterScene extends Phaser.Scene {
     })
   }
 
-  // ── CONTINUAR ─────────────────────────────────────────────────────────────
-
   _continue() {
     if (!this._name || this._name.length < 2) {
-      // Shake en el campo de nombre
       this.tweens.add({
         targets: this._nameText,
         x: { from: this._nameText.x - 6, to: this._nameText.x + 6 },
@@ -276,11 +225,8 @@ export class CharacterScene extends Phaser.Scene {
       return
     }
 
-    // Limpiar input HTML
-    const input = document.getElementById('name-input-rpg')
-    if (input) input.remove()
+    document.getElementById('name-input-rpg')?.remove()
 
-    // Guardar en registry para usarlo en AuthScene/GameScene
     this.registry.set('character', {
       name:      this._name,
       gender:    this._gender,
@@ -296,8 +242,6 @@ export class CharacterScene extends Phaser.Scene {
     })
   }
 
-  // ── HELPERS UI ────────────────────────────────────────────────────────────
-
   _makeOptionBtn(x, y, label, active) {
     const g = this.add.graphics()
     this._drawOptionBtn(g, x, y, active)
@@ -310,7 +254,6 @@ export class CharacterScene extends Phaser.Scene {
     hit.setInteractive()
     hit._gfx  = g
     hit._text = t
-    hit._active = active
     return hit
   }
 
@@ -323,7 +266,6 @@ export class CharacterScene extends Phaser.Scene {
   }
 
   _updateOptionBtn(hit, active) {
-    hit._active = active
     this._drawOptionBtn(hit._gfx, hit.x, hit.y, active)
     hit._text.setColor(active ? '#1a1209' : '#c9a84c')
   }
@@ -336,10 +278,9 @@ export class CharacterScene extends Phaser.Scene {
       g.lineStyle(2, 0xffffff, 1)
       g.strokeCircle(x, y, 12)
     }
-    g._color    = color
-    g._x        = x
-    g._y        = y
-    g._selected = selected
+    g._color = color
+    g._x = x
+    g._y = y
 
     const hit = this.add.circle(x, y, 14, 0x000000, 0)
     hit.setInteractive()
