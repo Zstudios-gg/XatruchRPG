@@ -81,12 +81,18 @@ user-select: none;
       .btn-x { background: #1a1a2a; border-color: #5a5aaa; color: #5a5aaa; }
       .btn-y { background: #2a1a2a; border-color: #aa5aaa; color: #aa5aaa; }
     </style>
-    <script type="module" crossorigin src="/XatruchRPG/assets/index-BY79eCNO.js"></script>
+    <script type="module" crossorigin src="/XatruchRPG/assets/index-BfA3oJRK.js"></script>
   </head>
+
+  
   <body>
     <div id="game-container"></div>
     <div id="controls">
-      <div class="joystick-zone" id="joystick-zone"></div>
+      <div class="joystick-zone" id="joystick-zone">
+  <div id="joy-base">
+    <div id="joy-thumb"></div>
+  </div>
+</div>
       <div class="context-buttons">
         <div class="ctx-btn" id="ctx1">🗺️</div>
         <div class="ctx-btn" id="ctx2">⚡</div>
@@ -99,5 +105,41 @@ user-select: none;
         <div class="act-btn btn-y">Y</div>
       </div>
     </div>
+
+<script>
+const base = document.getElementById('joy-base')
+const thumb = document.getElementById('joy-thumb')
+let active = false
+let startX, startY
+const maxDist = 22
+
+base.addEventListener('touchstart', (e) => {
+  active = true
+  const t = e.touches[0]
+  const r = base.getBoundingClientRect()
+  startX = r.left + r.width / 2
+  startY = r.top + r.height / 2
+})
+
+document.addEventListener('touchmove', (e) => {
+  if (!active) return
+  e.preventDefault()
+  const t = e.touches[0]
+  let dx = t.clientX - startX
+  let dy = t.clientY - startY
+  const dist = Math.sqrt(dx * dx + dy * dy)
+  if (dist > maxDist) {
+    dx = (dx / dist) * maxDist
+    dy = (dy / dist) * maxDist
+  }
+  thumb.style.transform = `translate(${dx}px, ${dy}px)`
+}, { passive: false })
+
+document.addEventListener('touchend', () => {
+  active = false
+  thumb.style.transform = 'translate(0px, 0px)'
+})
+</script>
+
   </body>
 </html>
