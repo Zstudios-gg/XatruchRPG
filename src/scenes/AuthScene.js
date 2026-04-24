@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser'
 import { auth, provider } from '../firebase.js'
-import { signInWithPopup, onAuthStateChanged } from 'firebase/auth'
+import { signInWithPopup, signInWithRedirect, onAuthStateChanged, getRedirectResult } from 'firebase/auth'
 
 /**
  * AuthScene — pantalla de login con Google
@@ -97,6 +97,11 @@ export class AuthScene extends Phaser.Scene {
 
     // ── VERIFICAR SI YA ESTÁ LOGUEADO ───────────────────────────────────────
     this._statusText.setText('Verificando sesión...')
+
+    getRedirectResult(auth).then((result) => {
+  if (result?.user) this._goToGame(result.user)
+}).catch(console.error)
+
     onAuthStateChanged(auth, (user) => {
       if (user) {
         // Ya está logueado — va directo al juego
@@ -108,15 +113,14 @@ export class AuthScene extends Phaser.Scene {
   }
 
   async _loginGoogle() {
-    this._statusText.setText('Abriendo Google...')
-    try {
-      const result = await signInWithPopup(auth, provider)
-      this._goToGame(result.user)
-    } catch (err) {
-      console.error(err)
-      this._statusText.setText('Error al iniciar sesión. Intentá de nuevo.')
-    }
+  this._statusText.setText('Redirigiendo a Google...')
+  try {
+    await signInWithRedirect(auth, provider)
+  } catch (err) {
+    console.error(err)
+    this._statusText.setText('Error. Intentá de nuevo.')
   }
+}
 
   _goToGame(user) {
     // Guardamos el usuario en el registro global para usarlo en otras escenas
