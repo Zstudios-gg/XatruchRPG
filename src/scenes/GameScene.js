@@ -24,7 +24,21 @@ export class GameScene extends Phaser.Scene {
     this.playerData = new PlayerData('guest')
     this.playerData.data = { ...this.playerData.data }
   }
-
+// Si es jugador nuevo, aplicar datos de creación de personaje
+if (this.registry.get('isNewPlayer')) {
+  const char = this.registry.get('character')
+  if (char) {
+    this.playerData.set('name', char.name)
+    this.playerData.set('appearance', {
+      gender:    char.gender,
+      skinColor: char.skinIndex,
+      hairColor: char.hairIndex,
+      outfit:    'default'
+    })
+    await this.playerData.save()
+    this.registry.set('isNewPlayer', false)
+  }
+}
     const { width, height } = this.scale
 
     // Fondo

@@ -123,14 +123,20 @@ export class AuthScene extends Phaser.Scene {
 }
 
   _goToGame(user) {
-    // Guardamos el usuario en el registro global para usarlo en otras escenas
-    this.registry.set('user', user)
+  this.registry.set('user', user)
 
-    this.cameras.main.fadeOut(400, 0, 0, 0)
-    this.cameras.main.once('camerafadeoutcomplete', () => {
-      this.scene.start('SplashScene')
-    })
+  // Si hay datos de personaje nuevo, los guardamos en registry
+  // para que GameScene los aplique al PlayerData
+  const character = this.registry.get('character')
+  if (character && user) {
+    this.registry.set('isNewPlayer', true)
   }
+
+  this.cameras.main.fadeOut(400, 0, 0, 0)
+  this.cameras.main.once('camerafadeoutcomplete', () => {
+    this.scene.start('SplashScene')
+  })
+}
 
   _buildParticles(width, height) {
     for (let i = 0; i < 20; i++) {
