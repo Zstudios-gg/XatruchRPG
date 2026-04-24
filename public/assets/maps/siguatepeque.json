@@ -191,11 +191,19 @@
  "renderorder":"right-down",
  "tiledversion":"1.12.1",
  "tileheight":32,
- "tilesets":[
-        {
-         "firstgid":1,
-         "source":"sprout.tsx"
-        }],
+"tilesets":[
+  {
+    "firstgid":1,
+    "image":"../tilesets/Grass.png",
+    "imageheight":48,
+    "imagewidth":192,
+    "margin":0,
+    "name":"sprout",
+    "spacing":0,
+    "tilecount":18,
+    "tileheight":16,
+    "tilewidth":16
+  }],
  "tilewidth":32,
  "type":"map",
  "version":"1.10",

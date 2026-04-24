@@ -84,7 +84,7 @@ export class GameScene extends Phaser.Scene {
     // ── CÁMARA ───────────────────────────────────────────────────────────────
     this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1)
-    this.cameras.main.setZoom(2.5) // zoom para tiles de 16px
+    this.cameras.main.setZoom(2) // zoom para tiles de 16px
 
     // ── JOYSTICK ─────────────────────────────────────────────────────────────
     this.connectJoystick()
