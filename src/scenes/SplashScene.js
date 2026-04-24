@@ -114,15 +114,13 @@ xLogo.setDisplaySize(320, 320)
     })
 
     // Logo Xatruch con escala y fade
-    this.tweens.add({
-      targets: xLogo,
-      alpha: 1,
-      scaleX: { from: 0.88, to: 1 },
-      scaleY: { from: 0.88, to: 1 },
-      duration: 900,
-      ease: 'Back.Out',
-      delay: 900
-    })
+  this.tweens.add({
+  targets: xLogo,
+  alpha: 1,
+  duration: 900,
+  ease: 'Back.Out',
+  delay: 900
+})
 
     // Botón aparece
     this.tweens.add({
