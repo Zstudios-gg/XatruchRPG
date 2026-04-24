@@ -190,7 +190,7 @@
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.12.1",
- "tileheight":32,
+ "tileheight":16,
 "tilesets":[
   {
     "firstgid":1,
@@ -204,7 +204,7 @@
     "tileheight":16,
     "tilewidth":16
   }],
- "tilewidth":32,
+ "tilewidth":16,
  "type":"map",
  "version":"1.10",
  "width":50
