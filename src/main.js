@@ -12,6 +12,10 @@ const config = {
   backgroundColor: '#000000',
   parent: 'game-container',
   scene: [CharacterScene, AuthScene, SplashScene, GameScene, HUDScene],
+  physics: {
+    default: 'arcade',
+    arcade: { gravity: { y: 0 }, debug: false }
+  },
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH
