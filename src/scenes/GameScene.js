@@ -40,6 +40,9 @@ export class GameScene extends Phaser.Scene {
     )
 
     this.connectJoystick()
+
+    this.scene.launch('HUDScene')
+this.hud = this.scene.get('HUDScene')
   }
 
   connectJoystick() {
