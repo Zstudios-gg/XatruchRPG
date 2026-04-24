@@ -66,9 +66,9 @@ export class GameScene extends Phaser.Scene {
     this.shadow = this.add.ellipse(startX, startY + 16, 20, 8, 0x000000, 0.3)
 
     // Personaje como objeto físico
-    this.player = this.physics.add.sprite(startX, startY, '__DEFAULT')
-    this.player.setDisplaySize(24, 32)
-    this.player.setTint(0xc9a84c)
+   this.player = this.add.rectangle(startX, startY, 24, 32, 0xc9a84c)
+this.physics.add.existing(this.player)
+this.player.body.setCollideWorldBounds(true)
     this.player.setDepth(10)
     this.shadow.setDepth(9)
 
@@ -144,7 +144,7 @@ export class GameScene extends Phaser.Scene {
     const isMoving = dx !== 0 || dy !== 0
 
     // Movimiento con física
-    this.player.setVelocity(dx * this.speed, dy * this.speed)
+   this.player.body.setVelocity(dx * this.speed, dy * this.speed)
 
     // Bob al moverse
     if (isMoving) {
