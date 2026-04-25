@@ -104,8 +104,8 @@ export class GameScene extends Phaser.Scene {
     }
 
     // ── SOMBRA ───────────────────────────────────────────────────────────────
-    this.shadow = this.add.ellipse(startX, startY + 16, 20, 8, 0x000000, 0.3)
-    this.shadow.setDepth(9)
+    // this.shadow = this.add.ellipse(startX, startY + 16, 20, 8, 0x000000, 0.3)
+    // this.shadow.setDepth(9)
 
     // ── PERSONAJE ────────────────────────────────────────────────────────────
     if (this._gender === 'male') {
@@ -263,9 +263,9 @@ export class GameScene extends Phaser.Scene {
     this._updateAnim(isMoving)
 
     // Sombra
-    this.shadow.x = this.player.x
-    this.shadow.y = this.player.y + 28
-    this.shadow.scaleX = isMoving ? 0.8 : 1
+    // this.shadow.x = this.player.x
+    // this.shadow.y = this.player.y + 28
+    // this.shadow.scaleX = isMoving ? 0.8 : 1
 
     // Guardar posición cada 5 segundos
     if (this.playerData && time % 5000 < delta) {
