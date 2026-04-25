@@ -264,7 +264,7 @@ export class GameScene extends Phaser.Scene {
 
     // Sombra
     this.shadow.x = this.player.x
-    this.shadow.y = this.player.y + 14
+    this.shadow.y = this.player.y + 28
     this.shadow.scaleX = isMoving ? 0.8 : 1
 
     // Guardar posición cada 5 segundos
