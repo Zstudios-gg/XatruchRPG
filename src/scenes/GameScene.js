@@ -169,4 +169,3 @@ this._layerColision   = map.createLayer('colisiones', [tilesetPW, tilesetKN], 0,
     }
   }
 }
-//xd
