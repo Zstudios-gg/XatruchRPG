@@ -191,48 +191,49 @@
  "renderorder":"right-down",
  "tiledversion":"1.12.1",
  "tileheight":16,
- "tilesets":[
+
+"tilesets":[
   {
     "firstgid":1,
     "image":"../tilesets/Grass.png",
-    "imageheight":48,
-    "imagewidth":192,
+    "imageheight":112,
+    "imagewidth":176,
     "margin":0,
     "name":"sprout",
-    "spacing":0,
-    "tilecount":18,
-    "tileheight":16,
-    "tilewidth":16
-  },
-  {
-    "firstgid":16,
-    "image":"../tilesets/Dirt.png",
-    "imageheight":112,
-    "imagewidth":192,
-    "margin":0,
-    "name":"Dirt",
     "spacing":0,
     "tilecount":77,
     "tileheight":16,
     "tilewidth":16
   },
   {
-    "firstgid":93,
-    "image":"../tilesets/Hills.png",
-    "imageheight":96,
-    "imagewidth":192,
+    "firstgid":78,
+    "image":"../tilesets/Dirt.png",
+    "imageheight":128,
+    "imagewidth":128,
     "margin":0,
-    "name":"Hills",
+    "name":"Dirt",
     "spacing":0,
-    "tilecount":72,
+    "tilecount":64,
     "tileheight":16,
     "tilewidth":16
   },
   {
-    "firstgid":192,
+    "firstgid":142,
+    "image":"../tilesets/Hills.png",
+    "imageheight":144,
+    "imagewidth":176,
+    "margin":0,
+    "name":"Hills",
+    "spacing":0,
+    "tilecount":99,
+    "tileheight":16,
+    "tilewidth":16
+  },
+  {
+    "firstgid":241,
     "image":"../tilesets/Fences.png",
-    "imageheight":112,
-    "imagewidth":192,
+    "imageheight":64,
+    "imagewidth":64,
     "margin":0,
     "name":"Fences",
     "spacing":0,
@@ -240,7 +241,7 @@
     "tileheight":16,
     "tilewidth":16
   }
-],
+] ,
  "tilewidth":16,
  "type":"map",
  "version":"1.10",
