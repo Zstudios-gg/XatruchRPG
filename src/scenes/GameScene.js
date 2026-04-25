@@ -12,7 +12,7 @@ export class GameScene extends Phaser.Scene {
   }
 
  preload() {
-  this.load.tilemapTiledJSON('pueblo', '/XatruchRPG/assets/maps/pueblo.json')
+  this.load.tilemapTiledJSON('pueblo', '/XatruchRPG/assets/maps/pueblo-principal.json')
 this.load.image('tiles-pixelwood', '/XatruchRPG/assets/tilesets/PixelwoodValley.png')
 this.load.image('tiles-kenney', '/XatruchRPG/assets/tilesets/Kenney.png')
 }
