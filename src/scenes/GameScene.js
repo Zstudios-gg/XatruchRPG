@@ -12,11 +12,9 @@ export class GameScene extends Phaser.Scene {
   }
 
  preload() {
-  this.load.tilemapTiledJSON('siguatepeque', '/XatruchRPG/assets/maps/siguatepeque.json')
-  this.load.image('sprout', '/XatruchRPG/assets/tilesets/Grass.png')
-  this.load.image('Dirt', '/XatruchRPG/assets/tilesets/Dirt.png')
-  this.load.image('Hills', '/XatruchRPG/assets/tilesets/Hills.png')
-  this.load.image('Fences', '/XatruchRPG/assets/tilesets/Fences.png')
+  this.load.tilemapTiledJSON('pueblo', '/XatruchRPG/assets/maps/pueblo.json')
+this.load.image('tiles-pixelwood', '/XatruchRPG/assets/tilesets/PixelwoodValley.png')
+this.load.image('tiles-kenney', '/XatruchRPG/assets/tilesets/Kenney.png')
 }
 
   async create() {
@@ -47,25 +45,14 @@ export class GameScene extends Phaser.Scene {
     }
 
     // ── MAPA ────────────────────────────────────────────────────────────────
-   const map = this.make.tilemap({ key: 'siguatepeque' })
+  const map = this.make.tilemap({ key: 'pueblo' })
+const tilesetPW = map.addTilesetImage('PixelwoodValley', 'tiles-pixelwood')
+const tilesetKN = map.addTilesetImage('Kenney', 'tiles-kenney')
 
-const tilesetGrass  = map.addTilesetImage('sprout', 'sprout')
-const tilesetDirt   = map.addTilesetImage('Dirt', 'Dirt')
-const tilesetHills  = map.addTilesetImage('Hills', 'Hills')
-const tilesetFences = map.addTilesetImage('Fences', 'Fences')
-
-console.log('Tilesets:', tilesetGrass, tilesetDirt, tilesetHills, tilesetFences)
-
-if (!tilesetGrass || !tilesetDirt || !tilesetHills || !tilesetFences) {
-  console.error('Falló cargar uno o más tilesets')
-  return
-}
-
-const allTilesets = [tilesetGrass, tilesetDirt, tilesetHills, tilesetFences]
-
-this._layerSuelo    = map.createLayer('suelo', allTilesets, 0, 0)
-this._layerObjetos  = map.createLayer('objetos', allTilesets, 0, 0)
-this._layerColision = map.createLayer('colisiones', allTilesets, 0, 0)
+this._layerSuelo      = map.createLayer('suelo', [tilesetPW, tilesetKN], 0, 0)
+this._layerDecoracion = map.createLayer('decoracion', [tilesetPW, tilesetKN], 0, 0)
+this._layerObjetos    = map.createLayer('objetos', [tilesetPW, tilesetKN], 0, 0)
+this._layerColision   = map.createLayer('colisiones', [tilesetPW, tilesetKN], 0, 0)
 
     if (this._layerColision) {
       this._layerColision.setCollisionByExclusion([-1])
