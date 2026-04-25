@@ -11,10 +11,12 @@ export class GameScene extends Phaser.Scene {
     this._bobTime = 0
   }
 
-  preload() {
-    this.load.tilemapTiledJSON('siguatepeque', '/XatruchRPG/assets/maps/siguatepeque.json')
-    this.load.image('tiles-grass', '/XatruchRPG/assets/tilesets/Grass.png')
-  }
+ preload() {
+  this.load.tilemapTiledJSON('siguatepeque', '/XatruchRPG/assets/maps/siguatepeque.json')
+  this.load.image('sprout', '/XatruchRPG/assets/tilesets/Grass.png')
+  this.load.image('Dirt', '/XatruchRPG/assets/tilesets/Dirt.png')
+  this.load.image('Hills', '/XatruchRPG/assets/tilesets/Hills.png')
+}
 
   async create() {
     const user = this.registry.get('user')
@@ -44,12 +46,18 @@ export class GameScene extends Phaser.Scene {
     }
 
     // ── MAPA ────────────────────────────────────────────────────────────────
-    const map = this.make.tilemap({ key: 'siguatepeque' })
-    const tileset = map.addTilesetImage('sprout', 'tiles-grass')
+   const map = this.make.tilemap({ key: 'siguatepeque' })
+const tilesetGrass = map.addTilesetImage('sprout', 'sprout')
+const tilesetDirt  = map.addTilesetImage('Dirt', 'Dirt')
+const tilesetHills = map.addTilesetImage('Hills', 'Hills')
+const tilesetFences = map.addTilesetImage('Fences', 'Dirt')
 
-    this._layerSuelo    = map.createLayer('suelo', tileset, 0, 0)
-    this._layerObjetos  = map.createLayer('objetos', tileset, 0, 0)
-    this._layerColision = map.createLayer('colisiones', tileset, 0, 0)
+const allTilesets = [tilesetGrass, tilesetDirt, tilesetHills, tilesetFences]
+
+this._layerSuelo    = map.createLayer('suelo', allTilesets, 0, 0)
+this._layerObjetos  = map.createLayer('objetos', allTilesets, 0, 0)
+this._layerColision = map.createLayer('colisiones', allTilesets, 0, 0)
+
 
     if (this._layerColision) {
       this._layerColision.setCollisionByExclusion([-1])

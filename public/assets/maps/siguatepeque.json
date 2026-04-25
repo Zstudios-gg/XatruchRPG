@@ -192,22 +192,55 @@
  "tiledversion":"1.12.1",
  "tileheight":16,
  "tilesets":[
-        {
-         "firstgid":1,
-         "source":"..\/..\/..\/..\/ZStudios\/XatruchRPG-Map\/sprout.tsx"
-        }, 
-        {
-         "firstgid":16,
-         "source":"..\/..\/..\/..\/ZStudios\/XatruchRPG-Map\/Dirt.tsx"
-        }, 
-        {
-         "firstgid":93,
-         "source":"..\/..\/..\/..\/ZStudios\/XatruchRPG-Map\/Hills.tsx"
-        }, 
-        {
-         "firstgid":192,
-         "source":"..\/..\/..\/..\/ZStudios\/XatruchRPG-Map\/Fences.tsx"
-        }],
+  {
+    "firstgid":1,
+    "image":"../tilesets/Grass.png",
+    "imageheight":48,
+    "imagewidth":192,
+    "margin":0,
+    "name":"sprout",
+    "spacing":0,
+    "tilecount":18,
+    "tileheight":16,
+    "tilewidth":16
+  },
+  {
+    "firstgid":16,
+    "image":"../tilesets/Dirt.png",
+    "imageheight":112,
+    "imagewidth":192,
+    "margin":0,
+    "name":"Dirt",
+    "spacing":0,
+    "tilecount":77,
+    "tileheight":16,
+    "tilewidth":16
+  },
+  {
+    "firstgid":93,
+    "image":"../tilesets/Hills.png",
+    "imageheight":96,
+    "imagewidth":192,
+    "margin":0,
+    "name":"Hills",
+    "spacing":0,
+    "tilecount":72,
+    "tileheight":16,
+    "tilewidth":16
+  },
+  {
+    "firstgid":192,
+    "image":"../tilesets/Fences.png",
+    "imageheight":112,
+    "imagewidth":192,
+    "margin":0,
+    "name":"Fences",
+    "spacing":0,
+    "tilecount":16,
+    "tileheight":16,
+    "tilewidth":16
+  }
+],
  "tilewidth":16,
  "type":"map",
  "version":"1.10",
