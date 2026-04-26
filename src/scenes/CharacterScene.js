@@ -5,17 +5,14 @@ import { onAuthStateChanged } from 'firebase/auth'
 export class CharacterScene extends Phaser.Scene {
   constructor() {
     super({ key: 'CharacterScene' })
-    this._gender    = 'male'
-    this._name      = ''
-    this._step      = 1 // 1 = elegir PJ y nombre, 2 = login o skip
+    this._gender = 'male'
+    this._name   = ''
   }
 
   preload() {
-    // Assets del splash (para que no den error al saltar a SplashScene)
     this.load.image('logo-xatruch', '/XatruchRPG/assets/logo-xatruch.png')
     this.load.image('bg-splash',    '/XatruchRPG/assets/bg-splash.jpg')
 
-    // Sprites de personajes
     this.load.spritesheet('char-male', '/XatruchRPG/assets/characters/player.png', {
       frameWidth: 48, frameHeight: 48
     })
@@ -27,16 +24,19 @@ export class CharacterScene extends Phaser.Scene {
   create() {
     const { width, height } = this.scale
 
+    // Ocultar controles
+    document.getElementById('controls').style.display = 'none'
+
     // Fondo mientras verifica sesión
     this.add.rectangle(width / 2, height / 2, width, height, 0x050d05)
     this.add.text(width / 2, height / 2, 'Cargando...', {
       fontSize: '13px', color: '#c9a84c'
     }).setOrigin(0.5)
 
-    // Verificar sesión primero
     onAuthStateChanged(auth, (user) => {
       if (user) {
         this.registry.set('user', user)
+        document.getElementById('controls').style.display = 'flex'
         this.scene.start('SplashScene')
       } else {
         this._buildStep1(width, height)
@@ -48,8 +48,8 @@ export class CharacterScene extends Phaser.Scene {
 
   _buildStep1(width, height) {
     this.children.removeAll(true)
+    document.getElementById('controls').style.display = 'none'
 
-    // Crear animaciones
     this._createAnims()
 
     // Fondo
@@ -59,84 +59,82 @@ export class CharacterScene extends Phaser.Scene {
     this._buildParticles(width, height)
 
     // Título
-    this.add.text(width / 2, height * 0.06, 'ELIGE TU AVENTURERO', {
+    this.add.text(width / 2, height * 0.05, 'ELIGE TU AVENTURERO', {
       fontSize: '13px', color: '#c9a84c', fontStyle: 'bold',
       letterSpacing: 3, stroke: '#000000', strokeThickness: 3
     }).setOrigin(0.5)
 
     const line = this.add.graphics()
     line.lineStyle(1, 0xc9a84c, 0.4)
-    line.lineBetween(width * 0.1, height * 0.11, width * 0.9, height * 0.11)
+    line.lineBetween(width * 0.1, height * 0.1, width * 0.9, height * 0.1)
 
-    // ── PERSONAJE MASCULINO ─────────────────────────────────────────────────
-    const maleX  = width * 0.28
+    // ── PERSONAJES ──────────────────────────────────────────────────────────
+    const maleX   = width * 0.28
     const femaleX = width * 0.72
-    const charY  = height * 0.32
+    const charY   = height * 0.34
 
-    // Fondo selección masculino
-    this._maleBg = this.add.graphics()
-    this._drawCharBox(this._maleBg, maleX, charY, true)
+    // Fondo selección
+    this._maleBg   = this.add.graphics()
+    this._femaleBg = this.add.graphics()
+    this._drawCharBox(this._maleBg,   maleX,   charY, true)
+    this._drawCharBox(this._femaleBg, femaleX, charY, false)
 
-    // Sprite masculino animado (zoom x3 para que se vea bien)
+    // Sprites animados
     this._maleSprite = this.add.sprite(maleX, charY - 10, 'char-male', 0)
     this._maleSprite.setScale(3)
-    this._maleSprite.anims.play('preview-male-walk', true)
-
-    // Etiqueta masculino
-    this.add.text(maleX, charY + 52, 'HÉROE', {
-      fontSize: '11px', color: '#c9a84c', fontStyle: 'bold', letterSpacing: 2
-    }).setOrigin(0.5)
-    this.add.text(maleX, charY + 66, 'Guerrero de Siguatepeque', {
-      fontSize: '8px', color: '#888866'
-    }).setOrigin(0.5)
-
-    // Hit area masculino
-    const maleHit = this.add.rectangle(maleX, charY, 110, 130, 0x000000, 0)
-    maleHit.setInteractive()
-    maleHit.on('pointerdown', () => this._selectGender('male'))
-
-    // ── PERSONAJE FEMENINO ──────────────────────────────────────────────────
-    this._femaleBg = this.add.graphics()
-    this._drawCharBox(this._femaleBg, femaleX, charY, false)
+    this._maleSprite.anims.play('preview-male-attack', true)
 
     this._femaleSprite = this.add.sprite(femaleX, charY - 10, 'char-female', 0)
     this._femaleSprite.setScale(3)
-    this._femaleSprite.anims.play('preview-female-walk', true)
+    this._femaleSprite.anims.play('preview-female-attack', true)
 
-    this.add.text(femaleX, charY + 52, 'HEROÍNA', {
-      fontSize: '11px', color: '#aa88cc', fontStyle: 'bold', letterSpacing: 2
+    // Etiquetas
+    this.add.text(maleX, charY + 54, 'HÉROE', {
+      fontSize: '11px', color: '#c9a84c', fontStyle: 'bold', letterSpacing: 2
     }).setOrigin(0.5)
-    this.add.text(femaleX, charY + 66, 'Exploradora del Lago Yojoa', {
+    this.add.text(maleX, charY + 68, 'Guerrero de Siguatepeque', {
       fontSize: '8px', color: '#888866'
     }).setOrigin(0.5)
 
-    const femaleHit = this.add.rectangle(femaleX, charY, 110, 130, 0x000000, 0)
+    this.add.text(femaleX, charY + 54, 'HEROÍNA', {
+      fontSize: '11px', color: '#aa88cc', fontStyle: 'bold', letterSpacing: 2
+    }).setOrigin(0.5)
+    this.add.text(femaleX, charY + 68, 'Exploradora del Lago Yojoa', {
+      fontSize: '8px', color: '#888866'
+    }).setOrigin(0.5)
+
+    // Hit areas
+    const maleHit = this.add.rectangle(maleX, charY, 110, 140, 0x000000, 0)
+    maleHit.setInteractive()
+    maleHit.on('pointerdown', () => this._selectGender('male'))
+
+    const femaleHit = this.add.rectangle(femaleX, charY, 110, 140, 0x000000, 0)
     femaleHit.setInteractive()
     femaleHit.on('pointerdown', () => this._selectGender('female'))
 
     // ── NOMBRE ──────────────────────────────────────────────────────────────
-    this.add.text(width / 2, height * 0.585, 'NOMBRE DEL AVENTURERO', {
+    this.add.text(width / 2, height * 0.618, 'NOMBRE DEL AVENTURERO', {
       fontSize: '9px', color: '#888866', letterSpacing: 2
     }).setOrigin(0.5)
 
     const inputBg = this.add.graphics()
     inputBg.fillStyle(0x111122, 1)
-    inputBg.fillRoundedRect(width * 0.12, height * 0.605, width * 0.76, 38, 8)
+    inputBg.fillRoundedRect(width * 0.12, height * 0.636, width * 0.76, 38, 8)
     inputBg.lineStyle(1, 0xc9a84c, 0.4)
-    inputBg.strokeRoundedRect(width * 0.12, height * 0.605, width * 0.76, 38, 8)
+    inputBg.strokeRoundedRect(width * 0.12, height * 0.636, width * 0.76, 38, 8)
 
-    this._nameText = this.add.text(width / 2, height * 0.605 + 19, 'Toca para escribir...', {
+    this._nameText = this.add.text(width / 2, height * 0.636 + 19, 'Toca para escribir...', {
       fontSize: '13px', color: '#666655', fontStyle: 'italic'
     }).setOrigin(0.5)
 
     this._setupNameInput()
 
-    const inputHit = this.add.rectangle(width / 2, height * 0.605 + 19, width * 0.76, 38, 0x000000, 0)
+    const inputHit = this.add.rectangle(width / 2, height * 0.636 + 19, width * 0.76, 38, 0x000000, 0)
     inputHit.setInteractive()
     inputHit.on('pointerdown', () => document.getElementById('name-input-rpg')?.focus())
 
     // ── BOTÓN CONTINUAR ─────────────────────────────────────────────────────
-    const btnY   = height * 0.82
+    const btnY   = height * 0.84
     const btnGfx = this.add.graphics()
     this._drawBtn(btnGfx, width / 2, btnY, 220, 48)
 
@@ -172,15 +170,13 @@ export class CharacterScene extends Phaser.Scene {
 
     document.getElementById('name-input-rpg')?.remove()
 
-    // Guardar selección
     this.registry.set('character', {
-      name:     this._name,
-      gender:   this._gender,
+      name:      this._name,
+      gender:    this._gender,
       skinIndex: 0,
       hairIndex: 0
     })
 
-    // Transición al paso 2
     this.cameras.main.fadeOut(300, 0, 0, 0)
     this.cameras.main.once('camerafadeoutcomplete', () => {
       this.children.removeAll(true)
@@ -190,19 +186,16 @@ export class CharacterScene extends Phaser.Scene {
   }
 
   _buildStep2(width, height) {
-    // Fondo
     const bg = this.add.graphics()
     bg.fillGradientStyle(0x050d05, 0x050d05, 0x0a1a0e, 0x030a06, 1)
     bg.fillRect(0, 0, width, height)
     this._buildParticles(width, height)
 
-    // Logo
     if (this.textures.exists('logo-xatruch')) {
       const logo = this.add.image(width / 2, height * 0.28, 'logo-xatruch')
       logo.setDisplaySize(320, 320)
     }
 
-    // Saludo con nombre elegido
     const char = this.registry.get('character')
     this.add.text(width / 2, height * 0.52, `¡Bienvenido, ${char?.name || 'Aventurero'}!`, {
       fontSize: '14px', color: '#c9a84c', fontStyle: 'bold'
@@ -212,7 +205,7 @@ export class CharacterScene extends Phaser.Scene {
       fontSize: '12px', color: '#888888', align: 'center', lineSpacing: 5
     }).setOrigin(0.5)
 
-    // ── BOTÓN GOOGLE ────────────────────────────────────────────────────────
+    // Botón Google
     const btnY = height * 0.66
     const btnW = 240
     const btnH = 50
@@ -231,9 +224,12 @@ export class CharacterScene extends Phaser.Scene {
 
     const hitGoogle = this.add.rectangle(width / 2, btnY, btnW, btnH, 0x000000, 0)
     hitGoogle.setInteractive()
-    hitGoogle.on('pointerdown', () => this.scene.start('AuthScene'))
+    hitGoogle.on('pointerdown', () => {
+      document.getElementById('controls').style.display = 'flex'
+      this.scene.start('AuthScene')
+    })
 
-    // ── BOTÓN SKIP ───────────────────────────────────────────────────────────
+    // Botón skip
     const skipY   = height * 0.78
     const skipGfx = this.add.graphics()
     this._drawBtn(skipGfx, width / 2, skipY, 220, 46, true)
@@ -245,6 +241,7 @@ export class CharacterScene extends Phaser.Scene {
     const hitSkip = this.add.rectangle(width / 2, skipY, 220, 46, 0x000000, 0)
     hitSkip.setInteractive()
     hitSkip.on('pointerdown', () => {
+      document.getElementById('controls').style.display = 'flex'
       this.registry.set('user', null)
       this.registry.set('isNewPlayer', true)
       this.scene.start('SplashScene')
@@ -270,28 +267,30 @@ export class CharacterScene extends Phaser.Scene {
 
   _createAnims() {
     const A = this.anims
-    if (!A.exists('preview-male-walk')) {
-      A.create({ key: 'preview-male-walk',   frames: A.generateFrameNumbers('char-male',   { start: 0, end: 5  }), frameRate: 6, repeat: -1 })
-      A.create({ key: 'preview-female-walk', frames: A.generateFrameNumbers('char-female', { start: 12, end: 15 }), frameRate: 6, repeat: -1 })
-    }
+    if (A.exists('preview-male-attack')) return
+
+    // Masculino fila 6 — ataque frente (frames 36-39)
+    A.create({ key: 'preview-male-attack',   frames: A.generateFrameNumbers('char-male',   { start: 36, end: 39 }), frameRate: 6, repeat: -1 })
+    // Femenino fila 7 — ataque frente (frames 24-26)
+    A.create({ key: 'preview-female-attack', frames: A.generateFrameNumbers('char-female', { start: 24, end: 26 }), frameRate: 6, repeat: -1 })
   }
 
   _selectGender(gender) {
     this._gender = gender
-    this._drawCharBox(this._maleBg,   this.scale.width * 0.28, this.scale.height * 0.32, gender === 'male')
-    this._drawCharBox(this._femaleBg, this.scale.width * 0.72, this.scale.height * 0.32, gender === 'female')
+    const { width, height } = this.scale
+    this._drawCharBox(this._maleBg,   width * 0.28, height * 0.34, gender === 'male')
+    this._drawCharBox(this._femaleBg, width * 0.72, height * 0.34, gender === 'female')
   }
 
   _drawCharBox(g, cx, cy, selected) {
     g.clear()
     g.fillStyle(selected ? 0x1a2a1a : 0x0a0a1a, 0.9)
-    g.fillRoundedRect(cx - 55, cy - 65, 110, 130, 10)
+    g.fillRoundedRect(cx - 55, cy - 68, 110, 140, 10)
     g.lineStyle(2, selected ? 0xc9a84c : 0x333355, selected ? 1 : 0.4)
-    g.strokeRoundedRect(cx - 55, cy - 65, 110, 130, 10)
+    g.strokeRoundedRect(cx - 55, cy - 68, 110, 140, 10)
     if (selected) {
-      // Brillo interno
       g.fillStyle(0xc9a84c, 0.05)
-      g.fillRoundedRect(cx - 55, cy - 65, 110, 130, 10)
+      g.fillRoundedRect(cx - 55, cy - 68, 110, 140, 10)
     }
   }
 
@@ -299,9 +298,11 @@ export class CharacterScene extends Phaser.Scene {
     let input = document.getElementById('name-input-rpg')
     if (!input) {
       input = document.createElement('input')
-      input.id        = 'name-input-rpg'
-      input.type      = 'text'
+      input.id   = 'name-input-rpg'
+      input.type = 'text'
       input.maxLength = 16
+      input.setAttribute('dir', 'ltr')
+      input.setAttribute('autocomplete', 'off')
       input.style.cssText = `
         position: absolute; opacity: 0; pointer-events: none;
         width: 1px; height: 1px; top: 50%; left: 50%;
@@ -309,6 +310,8 @@ export class CharacterScene extends Phaser.Scene {
       document.body.appendChild(input)
     }
     input.value = ''
+    this._name  = ''
+
     input.addEventListener('input', () => {
       this._name = input.value.trim()
       if (this._name.length > 0) {
