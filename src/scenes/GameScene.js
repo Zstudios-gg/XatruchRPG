@@ -26,15 +26,11 @@ export class GameScene extends Phaser.Scene {
       frameHeight: 48
     })
 
-    // Personaje femenino (pigman)
-    this.load.spritesheet('player-female-idle', '/XatruchRPG/assets/characters/Idle__32x32_.png', {
-      frameWidth:  32,
-      frameHeight: 32
-    })
-    this.load.spritesheet('player-female-run', '/XatruchRPG/assets/characters/Run__32x32_.png', {
-      frameWidth:  32,
-      frameHeight: 32
-    })
+    // Personaje femenino (character_02)
+    this.load.spritesheet('player-female', '/XatruchRPG/assets/characters/character_02.png', {
+  frameWidth:  48,
+  frameHeight: 48
+})
   }
 
   async create() {
@@ -112,7 +108,7 @@ export class GameScene extends Phaser.Scene {
       this.player = this.physics.add.sprite(startX, startY, 'player-male', 0)
       this.player.setScale(1.5)
     } else {
-      this.player = this.physics.add.sprite(startX, startY, 'player-female-idle', 0)
+      this.player = this.physics.add.sprite(startX, startY, 'player-female', 0)
       this.player.setScale(1.5)
     }
 
@@ -185,17 +181,26 @@ export class GameScene extends Phaser.Scene {
 
   // ── ANIMACIONES FEMENINO ───────────────────────────────────────────────────
   _createFemaleAnims() {
-    const A = this.anims
-    if (A.exists('idle')) return
+  const A = this.anims
+  if (A.exists('idle')) return
 
-    A.create({ key: 'idle',       frames: A.generateFrameNumbers('player-female-idle', { start: 0, end: 7 }), frameRate: 8,  repeat: -1 })
-    A.create({ key: 'walk-down',  frames: A.generateFrameNumbers('player-female-run',  { start: 0, end: 7 }), frameRate: 8,  repeat: -1 })
-    A.create({ key: 'walk-right', frames: A.generateFrameNumbers('player-female-run',  { start: 0, end: 7 }), frameRate: 8,  repeat: -1 })
-    A.create({ key: 'walk-up',    frames: A.generateFrameNumbers('player-female-run',  { start: 0, end: 7 }), frameRate: 8,  repeat: -1 })
-    A.create({ key: 'run-down',   frames: A.generateFrameNumbers('player-female-run',  { start: 0, end: 7 }), frameRate: 12, repeat: -1 })
-    A.create({ key: 'run-right',  frames: A.generateFrameNumbers('player-female-run',  { start: 0, end: 7 }), frameRate: 12, repeat: -1 })
-    A.create({ key: 'run-up',     frames: A.generateFrameNumbers('player-female-run',  { start: 0, end: 7 }), frameRate: 12, repeat: -1 })
-  }
+  // Fila 0 — idle frente (frames 0-3)
+  A.create({ key: 'idle',       frames: A.generateFrameNumbers('player-female', { start: 0,  end: 3  }), frameRate: 6,  repeat: -1 })
+  // Fila 1 — idle derecha (frames 4-7)
+  A.create({ key: 'idle-right', frames: A.generateFrameNumbers('player-female', { start: 4,  end: 7  }), frameRate: 6,  repeat: -1 })
+  // Fila 2 — idle espalda (frames 8-11)
+  A.create({ key: 'idle-up',    frames: A.generateFrameNumbers('player-female', { start: 8,  end: 11 }), frameRate: 6,  repeat: -1 })
+  // Fila 3 — caminar frente (frames 12-15)
+  A.create({ key: 'walk-down',  frames: A.generateFrameNumbers('player-female', { start: 12, end: 15 }), frameRate: 8,  repeat: -1 })
+  // Fila 4 — caminar derecha (frames 16-19)
+  A.create({ key: 'walk-right', frames: A.generateFrameNumbers('player-female', { start: 16, end: 19 }), frameRate: 8,  repeat: -1 })
+  // Fila 5 — caminar espalda (frames 20-23)
+  A.create({ key: 'walk-up',    frames: A.generateFrameNumbers('player-female', { start: 20, end: 23 }), frameRate: 8,  repeat: -1 })
+  // Correr — reutilizamos caminar a mayor velocidad
+  A.create({ key: 'run-down',   frames: A.generateFrameNumbers('player-female', { start: 12, end: 15 }), frameRate: 14, repeat: -1 })
+  A.create({ key: 'run-right',  frames: A.generateFrameNumbers('player-female', { start: 16, end: 19 }), frameRate: 14, repeat: -1 })
+  A.create({ key: 'run-up',     frames: A.generateFrameNumbers('player-female', { start: 20, end: 23 }), frameRate: 14, repeat: -1 })
+}
 
   // ── JOYSTICK ───────────────────────────────────────────────────────────────
   connectJoystick() {
@@ -274,11 +279,17 @@ export class GameScene extends Phaser.Scene {
   }
 
   _updateAnim(isMoving) {
-    if (!isMoving) {
+  if (!isMoving) {
+    if (this._gender === 'female') {
+      if (this._lastDir === 'right') this.player.anims.play('idle-right', true)
+      else if (this._lastDir === 'up') this.player.anims.play('idle-up', true)
+      else this.player.anims.play('idle', true)
+    } else {
       this.player.anims.play('idle', true)
-      return
     }
-    const prefix = this._isRunning ? 'run' : 'walk'
-    this.player.anims.play(`${prefix}-${this._lastDir}`, true)
+    return
   }
+  const prefix = this._isRunning ? 'run' : 'walk'
+  this.player.anims.play(`${prefix}-${this._lastDir}`, true)
+}
 }
