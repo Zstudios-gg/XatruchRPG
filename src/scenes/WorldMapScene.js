@@ -19,7 +19,7 @@ export class WorldMapScene extends Phaser.Scene {
   // ── PRELOAD ────────────────────────────────────────────────────────────────
   preload() {
     // Mapa mundial
-    this.load.tilemapTiledJSON('mundo', '/XatruchRPG/assets/maps/xatruch_world_map_v2.json')
+    this.load.tilemapTiledJSON('mundo', '/XatruchRPG/assets/maps/Xatruch_world_map.json')
     this.load.image('tiles-mundo',      '/XatruchRPG/assets/tilesets/xatruch_tileset.png')
 
     // Personajes (por si viene directo a esta escena sin pasar por GameScene)
