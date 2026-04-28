@@ -283,7 +283,7 @@ export class GameScene extends Phaser.Scene {
     // ── TRANSICIÓN AL MAPA MUNDIAL ──────────────────────────────────────────
     // El mapa es 80x80 tiles de 16px = 1280px de ancho
     // Cuando el jugador toca el borde derecho → ir al mundo
-    const mapWidth = 80 * 16 // 1280px
+    const mapWidth = 77 * 16 // 1280px
     if (this.player.x >= mapWidth - 20) {
       this._irAlMapaMundial()
     }
