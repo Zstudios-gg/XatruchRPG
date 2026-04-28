@@ -4,6 +4,7 @@ import { AuthScene }      from './scenes/AuthScene.js'
 import { SplashScene }    from './scenes/SplashScene.js'
 import { GameScene }      from './scenes/GameScene.js'
 import { HUDScene }       from './scenes/HUDScene.js'
+import { WorldMapScene } from './scenes/WorldMapScene.js'
 
 const config = {
   type: Phaser.AUTO,
@@ -11,7 +12,7 @@ const config = {
   height: window.innerHeight * 0.80,
   backgroundColor: '#000000',
   parent: 'game-container',
-  scene: [CharacterScene, AuthScene, SplashScene, GameScene, HUDScene],
+  scene: [CharacterScene, AuthScene, SplashScene, GameScene, HUDScene, WorldMapScene],
   physics: {
     default: 'arcade',
     arcade: { gravity: { y: 0 }, debug: false }
