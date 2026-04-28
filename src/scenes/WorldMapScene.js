@@ -18,7 +18,7 @@ export class WorldMapScene extends Phaser.Scene {
 
   // ── PRELOAD ────────────────────────────────────────────────────────────────
   preload() {
-    // Mapa mundial
+    // Mapa mundial — nombre de archivo corregido
     this.load.tilemapTiledJSON('mundo', '/XatruchRPG/assets/maps/Xatruch_world_map.json')
     this.load.image('tiles-mundo',      '/XatruchRPG/assets/tilesets/xatruch_tileset.png')
 
@@ -59,7 +59,8 @@ export class WorldMapScene extends Phaser.Scene {
     this._layerColision = this._map.createLayer('colisiones', tilesetMundo, 0, 0)
 
     if (this._layerColision) {
-      this._layerColision.setCollisionByProperty({ collision: true })
+      // La capa entera tiene collision:true, colisionan todos los tiles no vacíos
+      this._layerColision.setCollisionByExclusion([-1])
       this._layerColision.setAlpha(0)
     }
 
