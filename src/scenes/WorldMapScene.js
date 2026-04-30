@@ -5,7 +5,7 @@ export class WorldMapScene extends Phaser.Scene {
   constructor() {
     super({ key: 'WorldMapScene' })
     this.player      = null
-    this.speed       = 80          // más lento que el pueblo, es mapa mundial
+    this.speed       = 80
     this.joyData     = { dx: 0, dy: 0 }
     this._moveTime   = 0
     this._lastDir    = 'down'
@@ -14,15 +14,17 @@ export class WorldMapScene extends Phaser.Scene {
     this._map        = null
     this._layerTerreno   = null
     this._layerColision  = null
+    // ── TECLADO ──────────────────────────────────────────────────────────────
+    this._keys       = {}
+    this._keyboardDx = 0
+    this._keyboardDy = 0
   }
 
   // ── PRELOAD ────────────────────────────────────────────────────────────────
   preload() {
-    // Mapa mundial — nombre de archivo corregido
     this.load.tilemapTiledJSON('mundo', '/XatruchRPG/assets/maps/Xatruch_world_map.json')
     this.load.image('tiles-mundo',      '/XatruchRPG/assets/tilesets/xatruch_tileset.png')
 
-    // Personajes (por si viene directo a esta escena sin pasar por GameScene)
     if (!this.textures.exists('player-male')) {
       this.load.spritesheet('player-male', '/XatruchRPG/assets/characters/player.png', {
         frameWidth:  48,
@@ -39,7 +41,6 @@ export class WorldMapScene extends Phaser.Scene {
 
   // ── CREATE ─────────────────────────────────────────────────────────────────
   async create() {
-    // ── PLAYER DATA ───────────────────────────────────────────────────────────
     const user = this.registry.get('user')
     if (user) {
       this.playerData = new PlayerData(user.uid)
@@ -59,20 +60,17 @@ export class WorldMapScene extends Phaser.Scene {
     this._layerColision = this._map.createLayer('colisiones', tilesetMundo, 0, 0)
 
     if (this._layerColision) {
-      // La capa entera tiene collision:true, colisionan todos los tiles no vacíos
       this._layerColision.setCollisionByExclusion([-1])
       this._layerColision.setAlpha(0)
     }
 
-    // ── POSICIÓN INICIAL EN EL MAPA MUNDIAL ───────────────────────────────────
-    // Siguatepeque está en tile (28, 35) → en píxeles con tiles de 16px
+    // ── POSICIÓN INICIAL ──────────────────────────────────────────────────────
     const defaultX = 28 * 16
     const defaultY = 35 * 16
     const startX = this.playerData.get('worldX') || defaultX
     const startY = this.playerData.get('worldY') || defaultY
 
     // ── ANIMACIONES ───────────────────────────────────────────────────────────
-    // Solo crea animaciones si no existen ya (por si viene de GameScene)
     if (this._gender === 'male') {
       this._createMaleAnims()
     } else {
@@ -82,7 +80,7 @@ export class WorldMapScene extends Phaser.Scene {
     // ── PERSONAJE ─────────────────────────────────────────────────────────────
     const spriteKey = this._gender === 'male' ? 'player-male' : 'player-female'
     this.player = this.physics.add.sprite(startX, startY, spriteKey, 0)
-    this.player.setScale(1.2)   // un poco más pequeño que en el pueblo
+    this.player.setScale(1.2)
     this.player.setDepth(10)
     this.player.body.setCollideWorldBounds(true)
     this.player.body.setSize(20, 28)
@@ -111,13 +109,16 @@ export class WorldMapScene extends Phaser.Scene {
       this._map.heightInPixels
     )
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1)
-    this.cameras.main.setZoom(2.5)  // zoom mayor para que se vean bien los tiles pequeños
+    this.cameras.main.setZoom(2.5)
 
-    // ── LANDMARKS (puntos de interés) ─────────────────────────────────────────
+    // ── LANDMARKS ─────────────────────────────────────────────────────────────
     this._setupLandmarks()
 
-    // ── JOYSTICK ──────────────────────────────────────────────────────────────
+    // ── JOYSTICK (touch) ──────────────────────────────────────────────────────
     this.connectJoystick()
+
+    // ── TECLADO ───────────────────────────────────────────────────────────────
+    this._setupKeyboard()
 
     // ── HUD ───────────────────────────────────────────────────────────────────
     if (!this.scene.isActive('HUDScene')) {
@@ -146,14 +147,84 @@ export class WorldMapScene extends Phaser.Scene {
       stroke: '#000000',
       strokeThickness: 3
     })
-    .setScrollFactor(0)  // fijo en pantalla
+    .setScrollFactor(0)
     .setDepth(20)
+  }
+
+  // ── SETUP TECLADO ──────────────────────────────────────────────────────────
+  _setupKeyboard() {
+    const kb = this.input.keyboard
+
+    // Movimiento WASD
+    this._keys.w = kb.addKey(Phaser.Input.Keyboard.KeyCodes.W)
+    this._keys.a = kb.addKey(Phaser.Input.Keyboard.KeyCodes.A)
+    this._keys.s = kb.addKey(Phaser.Input.Keyboard.KeyCodes.S)
+    this._keys.d = kb.addKey(Phaser.Input.Keyboard.KeyCodes.D)
+
+    // Botones de acción — J K U I → A B X Y
+    this._keys.btnA = kb.addKey(Phaser.Input.Keyboard.KeyCodes.J)
+    this._keys.btnB = kb.addKey(Phaser.Input.Keyboard.KeyCodes.K)
+    this._keys.btnX = kb.addKey(Phaser.Input.Keyboard.KeyCodes.U)
+    this._keys.btnY = kb.addKey(Phaser.Input.Keyboard.KeyCodes.I)
+
+    // Botones contextuales 1 2 3
+    this._keys.ctx1 = kb.addKey(Phaser.Input.Keyboard.KeyCodes.ONE)
+    this._keys.ctx2 = kb.addKey(Phaser.Input.Keyboard.KeyCodes.TWO)
+    this._keys.ctx3 = kb.addKey(Phaser.Input.Keyboard.KeyCodes.THREE)
+
+    // Paneles HUD
+    this._keys.panelUser     = kb.addKey(Phaser.Input.Keyboard.KeyCodes.P)
+    this._keys.panelSettings = kb.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)
+
+    // Eventos oneshot para botones HTML y HUD
+    this._keys.btnA.on('down', () => this._dispatchHtmlClick('.btn-a'))
+    this._keys.btnB.on('down', () => this._dispatchHtmlClick('.btn-b'))
+    this._keys.btnX.on('down', () => this._dispatchHtmlClick('.btn-x'))
+    this._keys.btnY.on('down', () => this._dispatchHtmlClick('.btn-y'))
+
+    this._keys.ctx1.on('down', () => this._dispatchHtmlClick('#ctx1'))
+    this._keys.ctx2.on('down', () => this._dispatchHtmlClick('#ctx2'))
+    this._keys.ctx3.on('down', () => this._dispatchHtmlClick('#ctx3'))
+
+    this._keys.panelUser.on('down', () => {
+      const hud = this.scene.get('HUDScene')
+      if (hud && hud._togglePanel) hud._togglePanel()
+    })
+    this._keys.panelSettings.on('down', () => {
+      const hud = this.scene.get('HUDScene')
+      if (hud && hud._toggleSettingsKeyboard) hud._toggleSettingsKeyboard()
+    })
+  }
+
+  // Dispara un click real en un elemento HTML del DOM
+  _dispatchHtmlClick(selector) {
+    const el = document.querySelector(selector)
+    if (el) el.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+  }
+
+  // ── LEER TECLADO EN UPDATE ─────────────────────────────────────────────────
+  _readKeyboard() {
+    let dx = 0
+    let dy = 0
+
+    if (this._keys.a?.isDown) dx -= 1
+    if (this._keys.d?.isDown) dx += 1
+    if (this._keys.w?.isDown) dy -= 1
+    if (this._keys.s?.isDown) dy += 1
+
+    // Normalizar diagonal
+    if (dx !== 0 && dy !== 0) {
+      const inv = 1 / Math.SQRT2
+      dx *= inv
+      dy *= inv
+    }
+
+    this._keyboardDx = dx
+    this._keyboardDy = dy
   }
 
   // ── LANDMARKS ──────────────────────────────────────────────────────────────
   _setupLandmarks() {
-    // Puntos de interés en coordenadas de tile → píxeles
-    // Basado en el JSON de landmarks con mapa 112x64 tiles de 16px
     this._landmarks = [
       { id: 'siguatepeque',               nombre: 'Siguatepeque',              tx: 28, ty: 35, radio: 32 },
       { id: 'cuevas_taulabe',             nombre: 'Cuevas de Taulabé',         tx: 27, ty: 32, radio: 24 },
@@ -171,7 +242,6 @@ export class WorldMapScene extends Phaser.Scene {
       { id: 'tortuga_golfina',            nombre: 'Tortuga Golfina',           tx: 36, ty: 59, radio: 24 },
     ]
 
-    // Convertir tiles a píxeles y crear zonas de detección
     this._landmarkZones = this._landmarks.map(lm => {
       const px = lm.tx * 16
       const py = lm.ty * 16
@@ -236,7 +306,7 @@ export class WorldMapScene extends Phaser.Scene {
     A.create({ key: 'run-up',     frames: A.generateFrameNumbers('player-female', { start: 20, end: 23 }), frameRate: 14, repeat: -1 })
   }
 
-  // ── JOYSTICK ───────────────────────────────────────────────────────────────
+  // ── JOYSTICK (touch) ───────────────────────────────────────────────────────
   connectJoystick() {
     const base = document.getElementById('joy-base')
     if (!base) return
@@ -270,7 +340,18 @@ export class WorldMapScene extends Phaser.Scene {
   update(time, delta) {
     if (!this.player) return
 
-    const { dx, dy } = this.joyData
+    // Leer teclado cada frame
+    this._readKeyboard()
+
+    // Teclado tiene prioridad sobre joystick si hay input
+    let dx = this.joyData.dx
+    let dy = this.joyData.dy
+
+    if (this._keyboardDx !== 0 || this._keyboardDy !== 0) {
+      dx = this._keyboardDx
+      dy = this._keyboardDy
+    }
+
     const isMoving = dx !== 0 || dy !== 0
 
     // Movimiento
@@ -331,7 +412,6 @@ export class WorldMapScene extends Phaser.Scene {
 
   // ── SHUTDOWN ───────────────────────────────────────────────────────────────
   shutdown() {
-    // Limpiar listeners del joystick al salir de la escena
     document.removeEventListener('touchmove', this._onTouchMove)
     document.removeEventListener('touchend',  this._onTouchEnd)
   }
