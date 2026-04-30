@@ -12,7 +12,11 @@ export class GameScene extends Phaser.Scene {
     this._lastDir  = 'down'
     this._isRunning = false
     this._gender   = 'male'
-    this._transicionando = false  // ← NUEVO: evita disparar transición múltiples veces
+    this._transicionando = false
+    // ── TECLADO ──────────────────────────────────────────────────────────────
+    this._keys     = {}   // teclas Phaser
+    this._keyboardDx = 0  // dirección calculada desde WASD
+    this._keyboardDy = 0
   }
 
   preload() {
@@ -35,7 +39,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   async create() {
-    this._transicionando = false  // ← NUEVO: reset por si el jugador regresa al pueblo
+    this._transicionando = false
 
     const user = this.registry.get('user')
 
@@ -47,7 +51,6 @@ export class GameScene extends Phaser.Scene {
       this.playerData = new PlayerData('guest')
     }
 
-    // Si es jugador nuevo, aplicar datos de creación de personaje
     if (this.registry.get('isNewPlayer')) {
       const char = this.registry.get('character')
       if (char) {
@@ -63,7 +66,6 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
-    // Si es jugador existente sin género definido, poner male por defecto
     const appearance = this.playerData.get('appearance')
     if (!appearance?.gender) {
       this.playerData.set('appearance', {
@@ -102,10 +104,6 @@ export class GameScene extends Phaser.Scene {
       this._createFemaleAnims()
     }
 
-    // ── SOMBRA ───────────────────────────────────────────────────────────────
-    // this.shadow = this.add.ellipse(startX, startY + 16, 20, 8, 0x000000, 0.3)
-    // this.shadow.setDepth(9)
-
     // ── PERSONAJE ────────────────────────────────────────────────────────────
     if (this._gender === 'male') {
       this.player = this.physics.add.sprite(startX, startY, 'player-male', 0)
@@ -123,7 +121,6 @@ export class GameScene extends Phaser.Scene {
       this._gender === 'male' ? 18 : 4
     )
 
-    // Iniciar animación idle
     this.player.anims.play('idle', true)
 
     // ── COLISIONES ───────────────────────────────────────────────────────────
@@ -139,8 +136,11 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1)
     this.cameras.main.setZoom(1.5)
 
-    // ── JOYSTICK ─────────────────────────────────────────────────────────────
+    // ── JOYSTICK (touch) ─────────────────────────────────────────────────────
     this.connectJoystick()
+
+    // ── TECLADO ──────────────────────────────────────────────────────────────
+    this._setupKeyboard()
 
     // ── HUD ──────────────────────────────────────────────────────────────────
     this.scene.launch('HUDScene')
@@ -161,24 +161,71 @@ export class GameScene extends Phaser.Scene {
     })
   }
 
+  // ── SETUP TECLADO ──────────────────────────────────────────────────────────
+  _setupKeyboard() {
+    const kb = this.input.keyboard
+
+    // Movimiento WASD
+    this._keys.w = kb.addKey(Phaser.Input.Keyboard.KeyCodes.W)
+    this._keys.a = kb.addKey(Phaser.Input.Keyboard.KeyCodes.A)
+    this._keys.s = kb.addKey(Phaser.Input.Keyboard.KeyCodes.S)
+    this._keys.d = kb.addKey(Phaser.Input.Keyboard.KeyCodes.D)
+
+    // Botones de acción — A B X Y
+    // Usamos las teclas J K U I para mapear A B X Y
+    // (evitamos conflicto con WASD; la 'A' del teclado ya es movimiento izquierda)
+    this._keys.btnA = kb.addKey(Phaser.Input.Keyboard.KeyCodes.J) // J → A
+    this._keys.btnB = kb.addKey(Phaser.Input.Keyboard.KeyCodes.K) // K → B
+    this._keys.btnX = kb.addKey(Phaser.Input.Keyboard.KeyCodes.U) // U → X
+    this._keys.btnY = kb.addKey(Phaser.Input.Keyboard.KeyCodes.I) // I → Y
+
+    // Botones contextuales 1 2 3
+    this._keys.ctx1 = kb.addKey(Phaser.Input.Keyboard.KeyCodes.ONE)
+    this._keys.ctx2 = kb.addKey(Phaser.Input.Keyboard.KeyCodes.TWO)
+    this._keys.ctx3 = kb.addKey(Phaser.Input.Keyboard.KeyCodes.THREE)
+
+    // Paneles HUD
+    this._keys.panelUser     = kb.addKey(Phaser.Input.Keyboard.KeyCodes.P)   // P → perfil
+    this._keys.panelSettings = kb.addKey(Phaser.Input.Keyboard.KeyCodes.ESC) // ESC → settings
+
+    // ── Eventos de tecla única (oneshot) para botones HUD y acciones ─────────
+    this._keys.btnA.on('down', () => this._dispatchHtmlClick('.btn-a'))
+    this._keys.btnB.on('down', () => this._dispatchHtmlClick('.btn-b'))
+    this._keys.btnX.on('down', () => this._dispatchHtmlClick('.btn-x'))
+    this._keys.btnY.on('down', () => this._dispatchHtmlClick('.btn-y'))
+
+    this._keys.ctx1.on('down', () => this._dispatchHtmlClick('#ctx1'))
+    this._keys.ctx2.on('down', () => this._dispatchHtmlClick('#ctx2'))
+    this._keys.ctx3.on('down', () => this._dispatchHtmlClick('#ctx3'))
+
+    // Abrir panel usuario/settings vía HUDScene
+    this._keys.panelUser.on('down', () => {
+      const hud = this.scene.get('HUDScene')
+      if (hud && hud._togglePanel) hud._togglePanel()
+    })
+    this._keys.panelSettings.on('down', () => {
+      const hud = this.scene.get('HUDScene')
+      if (hud && hud._toggleSettingsKeyboard) hud._toggleSettingsKeyboard()
+    })
+  }
+
+  // Dispara un click real en un elemento HTML del DOM (botones de la UI)
+  _dispatchHtmlClick(selector) {
+    const el = document.querySelector(selector)
+    if (el) el.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+  }
+
   // ── ANIMACIONES MASCULINO ──────────────────────────────────────────────────
   _createMaleAnims() {
     const A = this.anims
-    if (A.exists('idle')) return // ya creadas
+    if (A.exists('idle')) return
 
-    // Fila 0 — caminar frente (frames 0-5)
     A.create({ key: 'walk-down',  frames: A.generateFrameNumbers('player-male', { start: 0,  end: 5  }), frameRate: 8,  repeat: -1 })
-    // Fila 1 — caminar derecha (frames 6-11)
     A.create({ key: 'walk-right', frames: A.generateFrameNumbers('player-male', { start: 6,  end: 11 }), frameRate: 8,  repeat: -1 })
-    // Fila 2 — caminar espalda (frames 12-17)
     A.create({ key: 'walk-up',    frames: A.generateFrameNumbers('player-male', { start: 12, end: 17 }), frameRate: 8,  repeat: -1 })
-    // Fila 3 — correr frente (frames 18-23)
     A.create({ key: 'run-down',   frames: A.generateFrameNumbers('player-male', { start: 18, end: 23 }), frameRate: 12, repeat: -1 })
-    // Fila 4 — correr derecha (frames 24-29)
     A.create({ key: 'run-right',  frames: A.generateFrameNumbers('player-male', { start: 24, end: 29 }), frameRate: 12, repeat: -1 })
-    // Fila 5 — correr espalda (frames 30-35)
     A.create({ key: 'run-up',     frames: A.generateFrameNumbers('player-male', { start: 30, end: 35 }), frameRate: 12, repeat: -1 })
-    // Idle — primer frame de caminar frente
     A.create({ key: 'idle',       frames: [{ key: 'player-male', frame: 0 }], frameRate: 1, repeat: -1 })
   }
 
@@ -187,30 +234,22 @@ export class GameScene extends Phaser.Scene {
     const A = this.anims
     if (A.exists('idle')) return
 
-    // Fila 0 — idle frente (frames 0-3)
     A.create({ key: 'idle',       frames: A.generateFrameNumbers('player-female', { start: 0,  end: 3  }), frameRate: 6,  repeat: -1 })
-    // Fila 1 — idle derecha (frames 4-7)
     A.create({ key: 'idle-right', frames: A.generateFrameNumbers('player-female', { start: 4,  end: 7  }), frameRate: 6,  repeat: -1 })
-    // Fila 2 — idle espalda (frames 8-11)
     A.create({ key: 'idle-up',    frames: A.generateFrameNumbers('player-female', { start: 8,  end: 11 }), frameRate: 6,  repeat: -1 })
-    // Fila 3 — caminar frente (frames 12-15)
     A.create({ key: 'walk-down',  frames: A.generateFrameNumbers('player-female', { start: 12, end: 15 }), frameRate: 8,  repeat: -1 })
-    // Fila 4 — caminar derecha (frames 16-19)
     A.create({ key: 'walk-right', frames: A.generateFrameNumbers('player-female', { start: 16, end: 19 }), frameRate: 8,  repeat: -1 })
-    // Fila 5 — caminar espalda (frames 20-23)
     A.create({ key: 'walk-up',    frames: A.generateFrameNumbers('player-female', { start: 20, end: 23 }), frameRate: 8,  repeat: -1 })
-    // Correr — reutilizamos caminar a mayor velocidad
     A.create({ key: 'run-down',   frames: A.generateFrameNumbers('player-female', { start: 12, end: 15 }), frameRate: 14, repeat: -1 })
     A.create({ key: 'run-right',  frames: A.generateFrameNumbers('player-female', { start: 16, end: 19 }), frameRate: 14, repeat: -1 })
     A.create({ key: 'run-up',     frames: A.generateFrameNumbers('player-female', { start: 20, end: 23 }), frameRate: 14, repeat: -1 })
   }
 
-  // ── JOYSTICK ───────────────────────────────────────────────────────────────
+  // ── JOYSTICK (touch) ───────────────────────────────────────────────────────
   connectJoystick() {
     const base = document.getElementById('joy-base')
 
     base.addEventListener('touchstart', (e) => {
-      const t = e.touches[0]
       const r = base.getBoundingClientRect()
       this._joyStartX = r.left + r.width / 2
       this._joyStartY = r.top + r.height / 2
@@ -235,11 +274,46 @@ export class GameScene extends Phaser.Scene {
     })
   }
 
+  // ── LEER TECLADO EN UPDATE ─────────────────────────────────────────────────
+  _readKeyboard() {
+    let dx = 0
+    let dy = 0
+
+    if (this._keys.a?.isDown) dx -= 1
+    if (this._keys.d?.isDown) dx += 1
+    if (this._keys.w?.isDown) dy -= 1
+    if (this._keys.s?.isDown) dy += 1
+
+    // Normalizar diagonal
+    if (dx !== 0 && dy !== 0) {
+      const inv = 1 / Math.SQRT2
+      dx *= inv
+      dy *= inv
+    }
+
+    this._keyboardDx = dx
+    this._keyboardDy = dy
+  }
+
   // ── UPDATE ─────────────────────────────────────────────────────────────────
   update(time, delta) {
     if (!this.player) return
 
-    const { dx, dy } = this.joyData
+    // Leer teclado cada frame
+    this._readKeyboard()
+
+    // Combinar joystick + teclado (el que tenga mayor magnitud gana,
+    // o simplemente sumamos y dejamos que Phaser maneje la velocidad)
+    let dx = this.joyData.dx
+    let dy = this.joyData.dy
+
+    // Si el teclado tiene input, lo usa; si hay joystick también activo,
+    // combinamos ambos (el jugador podría usar los dos a la vez en teoría)
+    if (this._keyboardDx !== 0 || this._keyboardDy !== 0) {
+      dx = this._keyboardDx
+      dy = this._keyboardDy
+    }
+
     const isMoving = dx !== 0 || dy !== 0
 
     // Movimiento
@@ -270,20 +344,13 @@ export class GameScene extends Phaser.Scene {
     // Animación
     this._updateAnim(isMoving)
 
-    // Sombra
-    // this.shadow.x = this.player.x
-    // this.shadow.y = this.player.y + 28
-    // this.shadow.scaleX = isMoving ? 0.8 : 1
-
     // Guardar posición cada 5 segundos
     if (this.playerData && time % 5000 < delta) {
       this.playerData.savePosition(this.player.x, this.player.y)
     }
 
     // ── TRANSICIÓN AL MAPA MUNDIAL ──────────────────────────────────────────
-    // El mapa es 80x80 tiles de 16px = 1280px de ancho
-    // Cuando el jugador toca el borde derecho → ir al mundo
-    const mapWidth = 77 * 16 // 1280px
+    const mapWidth = 77 * 16
     if (this.player.x >= mapWidth - 20) {
       this._irAlMapaMundial()
     }
@@ -291,16 +358,13 @@ export class GameScene extends Phaser.Scene {
 
   // ── TRANSICIÓN AL MAPA MUNDIAL ─────────────────────────────────────────────
   _irAlMapaMundial() {
-    // Evitar que se llame múltiples veces
     if (this._transicionando) return
     this._transicionando = true
 
-    // Guardar posición actual del pueblo antes de salir
     if (this.playerData) {
       this.playerData.savePosition(this.player.x, this.player.y)
     }
 
-    // Fade out y cambio de escena
     this.cameras.main.fade(500, 0, 0, 0)
     this.time.delayedCall(500, () => {
       this.scene.stop('HUDScene')

@@ -16,6 +16,10 @@ export class HUDScene extends Phaser.Scene {
     this._settingsOpen = false
     this._panelTween   = null
     this._settingsTween = null
+    // Guardamos las coordenadas del botón settings para usarlas desde teclado
+    this._settBtnX = 0
+    this._settBtnY = 0
+    this._settBtnSize = 34
   }
 
   create() {
@@ -69,6 +73,11 @@ export class HUDScene extends Phaser.Scene {
     const settBtnX = width - btnSize / 2 - 10 - btnSize - 8
     const settBtnY = 20
 
+    // Guardamos para uso desde teclado
+    this._settBtnX    = settBtnX
+    this._settBtnY    = settBtnY
+    this._settBtnSize = btnSize
+
     this._settBtnBg = this.add.graphics()
     this._drawSettBtn(settBtnX, settBtnY, btnSize, false)
     this._settBtnIcon = this.add.text(settBtnX, settBtnY, '⚙️', { fontSize: '16px' }).setOrigin(0.5)
@@ -97,6 +106,11 @@ export class HUDScene extends Phaser.Scene {
     if (xpMax !== undefined) this._xpMax = xpMax
     if (gems  !== undefined) this._gems  = gems
     this._redrawPanel()
+  }
+
+  // Llamado desde GameScene vía keybind (ESC)
+  _toggleSettingsKeyboard() {
+    this._toggleSettings(this._settBtnX, this._settBtnY, this._settBtnSize)
   }
 
   // ── INTERNOS ──────────────────────────────────────────────────────────────
